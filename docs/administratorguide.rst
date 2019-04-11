@@ -165,16 +165,6 @@ REANA component for running Yadage types of workflows.
 - known issues: `<https://github.com/reanahub/reana-workflow-engine-yadage/issues>`_
 - documentation: `<https://reana-workflow-engine-yadage.readthedocs.io/>`_
 
-reana-workflow-monitor
-~~~~~~~~~~~~~~~~~~~~~~
-
-REANA component permitting to monitor running workflows.
-
-- source code: `<https://github.com/reanahub/reana-workflow-monitor>`_
-- release notes: `<https://github.com/reanahub/reana-workflow-monitor/releases>`_
-- known issues: `<https://github.com/reanahub/reana-workflow-monitor/issues>`_
-- documentation: `<https://reana-workflow-monitor.readthedocs.io/>`_
-
 Deployment
 ----------
 
@@ -184,14 +174,13 @@ Local deployment using Minikube
 REANA cloud uses `Kubernetes <https://kubernetes.io/>`_ container orchestration
 system. The best way to try it out locally is to set up `Minikube
 <https://kubernetes.io/docs/getting-started-guides/minikube/>`_ (minikube
-version 0.32.0 is known to work the best).
+version 1.0.0 is known to work the best).
 
 The minikube can be started as follows:
 
 .. code-block:: console
 
-   $ minikube start --kubernetes-version="v1.12.1" \
-     --feature-gates="TTLAfterFinished=true"
+   $ minikube start --feature-gates="TTLAfterFinished=true"
 
 REANA cluster can be easily deployed by means of the ``reana-cluster`` helper
 script. The typical usage scenario goes as follows:
@@ -203,8 +192,10 @@ script. The typical usage scenario goes as follows:
    $ source ~/.virtualenvs/myreana/bin/activate
    $ # install reana-cluster utility
    $ pip install reana-cluster
+   $ # deploy helm inside the Cluster
+   $ helm init
    $ # deploy new cluster and check progress
-   $ reana-cluster init
+   $ reana-cluster init --traefik
    $ reana-cluster status
    $ # set environment variables for reana-client
    $ eval $(reana-cluster env --incude-admin-token) # since you are admin

@@ -8,6 +8,9 @@
 GITHUB_USER ?= anonymous
 MINIKUBE_DRIVER ?= kvm2
 MINIKUBE_PROFILE ?= minikube
+MINIKUBE_CPUS ?= 2
+MINIKUBE_MEMORY ?= 3072
+MINIKUBE_DISKSIZE ?= 40g
 TIME_SLEEP ?= 40
 VENV_NAME ?= reana
 
@@ -52,12 +55,12 @@ help:
 
 setup: # Prepare local host virtual environment and Minikube for REANA building and deployment.
 ifndef HAS_KUBECTL
-	$(error "Please install Kubectl v1.13.3 or higher")
+	$(error "Please install Kubectl v1.13.4 or higher")
 endif
 ifndef HAS_MINIKUBE
-	$(error "Please install Minikube v0.34 or higher")
+	$(error "Please install Minikube v0.35.0 or higher")
 endif
-	minikube status --profile ${MINIKUBE_PROFILE} || minikube start --profile ${MINIKUBE_PROFILE} --vm-driver ${MINIKUBE_DRIVER} --feature-gates="TTLAfterFinished=true"
+	minikube status --profile ${MINIKUBE_PROFILE} || minikube start --profile ${MINIKUBE_PROFILE} --vm-driver ${MINIKUBE_DRIVER} --cpus ${MINIKUBE_CPUS} --memory ${MINIKUBE_MEMORY} --disk-size ${MINIKUBE_DISKSIZE} --feature-gates="TTLAfterFinished=true"
 	test -e ${HOME}/.virtualenvs/${VENV_NAME}/bin/activate || virtualenv ${HOME}/.virtualenvs/${VENV_NAME}
 
 clone: # Clone REANA source code repositories locally.

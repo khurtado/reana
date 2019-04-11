@@ -65,7 +65,6 @@ REPO_LIST_CLUSTER = [
     'reana-workflow-engine-cwl',
     'reana-workflow-engine-serial',
     'reana-workflow-engine-yadage',
-    'reana-workflow-monitor',
 ]
 
 REPO_LIST_CLUSTER_CLI = [
@@ -87,7 +86,6 @@ COMPONENT_PODS = {
     'reana-workflow-engine-serial': 'serial-default-worker',
     'reana-server': 'server',
     'reana-workflow-controller': 'workflow-controller',
-    'reana-workflow-monitor': 'workflow-monitor',
     'reana-workflow-engine-yadage': 'yadage-default-worker',
 }
 
@@ -162,12 +160,14 @@ def cli():  # noqa: D301
         $ minikube start --vm-driver=kvm2 \\
                          --feature-gates="TTLAfterFinished=true"
         $ eval $(minikube docker-env)
+        # deploy helm inside the Cluster
+        $ helm init
         $ # option (a): cluster in production-like mode
         $ reana-dev docker-build -t latest
-        $ reana-cluster -f reana-cluster-latest.yaml init
+        $ reana-cluster -f reana-cluster-latest.yaml init --traefik
         $ # option (b): cluster in developer-like debug-friendly mode
         $ reana-dev docker-build -t latest -b DEBUG=true
-        $ reana-cluster -f reana-cluster-dev.yaml init
+        $ reana-cluster -f reana-cluster-dev.yaml init --traefik
 
     How to set up your shell environment variables:
 
@@ -220,7 +220,7 @@ def cli():  # noqa: D301
         $ reana-dev docker-build -t latest
         $ reana-cluster -f reana-cluster-latest.yaml down
         $ minikube ssh 'sudo rm -rf /var/reana'
-        $ reana-cluster -f reana-cluster-latest.yaml init
+        $ reana-cluster -f reana-cluster-latest.yaml init --traefik
         $ eval $(reana-dev setup-environment)
         $ reana-dev run-example -c r-d-helloworld -s 20
         $ reana-dev git-submodule --delete
@@ -1017,8 +1017,11 @@ def git_push(full, component):  # noqa: D301
 @click.option('--build-arg', '-b', default='', multiple=True,
               help='Any build arguments? (e.g. `-b DEBUG=true`)')
 @click.option('--no-cache', is_flag=True)
+@click.option('-q', '--quiet', is_flag=True,
+              help='Suppress the build output and print image ID on success')
 @cli.command(name='docker-build')
-def docker_build(user, tag, component, build_arg, no_cache):  # noqa: D301
+def docker_build(user, tag, component, build_arg,
+                 no_cache, quiet):  # noqa: D301
     """Build REANA component images.
 
     \b
@@ -1045,6 +1048,7 @@ def docker_build(user, tag, component, build_arg, no_cache):  # noqa: D301
     :type tag: str
     :type build_arg: str
     :type no_cache: bool
+    :type quiet bool
     """
     components = select_components(component)
     static_tag = tag
@@ -1057,6 +1061,8 @@ def docker_build(user, tag, component, build_arg, no_cache):  # noqa: D301
                 cmd += ' --build-arg {0}'.format(arg)
             if no_cache:
                 cmd += ' --no-cache'
+            if quiet:
+                cmd += ' --quiet'
             cmd += ' -t {0}/{1}:{2} .'.format(user, component, tag)
             run_command(cmd, component)
         else:
